@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SatMonitor.Api/SatMonitor.Api.csproj" />
+    <Project Path="src/SatMonitor.Application/SatMonitor.Application.csproj" />
+    <Project Path="src/SatMonitor.Domain/SatMonitor.Domain.csproj" />
+    <Project Path="src/SatMonitor.Infrastructure/SatMonitor.Infrastructure.csproj" />
+  </Folder>
+</Solution>

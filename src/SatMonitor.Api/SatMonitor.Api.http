@@ -1,0 +1,6 @@
+@SatMonitor.Api_HostAddress = http://localhost:5291
+
+GET {{SatMonitor.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
