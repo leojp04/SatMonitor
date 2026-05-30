@@ -6,6 +6,7 @@ namespace SatMonitor.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Produces("application/json")]
 public class SatelitesController : ControllerBase
 {
     private readonly ISateliteService _service;
@@ -16,6 +17,7 @@ public class SatelitesController : ControllerBase
     }
 
     [HttpGet]
+    [ProducesResponseType(typeof(IEnumerable<SateliteDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAll()
     {
         var satelites = await _service.GetAllAsync();
@@ -23,6 +25,8 @@ public class SatelitesController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [ProducesResponseType(typeof(SateliteDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(int id)
     {
         var satelite = await _service.GetByIdAsync(id);
@@ -31,6 +35,7 @@ public class SatelitesController : ControllerBase
     }
 
     [HttpGet("missao/{missaoId}")]
+    [ProducesResponseType(typeof(IEnumerable<SateliteDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetByMissao(int missaoId)
     {
         var satelites = await _service.GetByMissaoIdAsync(missaoId);
@@ -38,6 +43,8 @@ public class SatelitesController : ControllerBase
     }
 
     [HttpPost]
+    [ProducesResponseType(typeof(SateliteDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create([FromBody] CreateSateliteDto dto)
     {
         var satelite = await _service.CreateAsync(dto);
@@ -45,6 +52,9 @@ public class SatelitesController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [ProducesResponseType(typeof(SateliteDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Update(int id, [FromBody] CreateSateliteDto dto)
     {
         var satelite = await _service.UpdateAsync(id, dto);
@@ -53,6 +63,8 @@ public class SatelitesController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(int id)
     {
         var result = await _service.DeleteAsync(id);

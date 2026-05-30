@@ -6,6 +6,7 @@ namespace SatMonitor.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Produces("application/json")]
 public class LeiturasController : ControllerBase
 {
     private readonly ILeituraSensorService _service;
@@ -16,6 +17,7 @@ public class LeiturasController : ControllerBase
     }
 
     [HttpGet]
+    [ProducesResponseType(typeof(IEnumerable<LeituraSensorDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAll()
     {
         var leituras = await _service.GetAllAsync();
@@ -23,6 +25,8 @@ public class LeiturasController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [ProducesResponseType(typeof(LeituraSensorDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(int id)
     {
         var leitura = await _service.GetByIdAsync(id);
@@ -31,6 +35,7 @@ public class LeiturasController : ControllerBase
     }
 
     [HttpGet("sensor/{sensorId}")]
+    [ProducesResponseType(typeof(IEnumerable<LeituraSensorDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetBySensor(int sensorId)
     {
         var leituras = await _service.GetBySensorIdAsync(sensorId);
@@ -38,6 +43,8 @@ public class LeiturasController : ControllerBase
     }
 
     [HttpPost]
+    [ProducesResponseType(typeof(LeituraSensorDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create([FromBody] CreateLeituraSensorDto dto)
     {
         var leitura = await _service.CreateAsync(dto);
@@ -45,6 +52,8 @@ public class LeiturasController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(int id)
     {
         var result = await _service.DeleteAsync(id);
