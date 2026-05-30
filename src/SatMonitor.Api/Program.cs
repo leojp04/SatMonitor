@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using SatMonitor.Application.Interfaces;
 using SatMonitor.Infrastructure.Data;
+using SatMonitor.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +11,11 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseOracle(builder.Configuration.GetConnectionString("OracleConnection")));
+
+builder.Services.AddScoped<IMissaoService, MissaoService>();
+builder.Services.AddScoped<ISateliteService, SateliteService>();
+builder.Services.AddScoped<ISensorService, SensorService>();
+builder.Services.AddScoped<ILeituraSensorService, LeituraSensorService>();
 
 builder.Services.AddCors(options =>
 {
