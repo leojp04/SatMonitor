@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using SatMonitor.Application.Interfaces;
 using SatMonitor.Infrastructure.Data;
 using SatMonitor.Infrastructure.Services;
+using SatMonitor.Api.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +29,7 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 
+app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseCors("AllowAll");
 app.UseAuthorization();
 app.MapControllers();
