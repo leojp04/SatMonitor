@@ -42,6 +42,19 @@ public class LeiturasController : ControllerBase
         return Ok(leituras);
     }
 
+    [HttpGet("status/{status}")]
+    [ProducesResponseType(typeof(IEnumerable<LeituraSensorDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetByStatus(string status)
+    {
+        var validos = new[] { "Normal", "Alerta", "Critico" };
+        if (!validos.Contains(status))
+            return BadRequest(new { erro = "Status inválido. Use: Normal, Alerta ou Critico" });
+
+        var leituras = await _service.GetByStatusAsync(status);
+        return Ok(leituras);
+    }
+
     [HttpPost]
     [ProducesResponseType(typeof(LeituraSensorDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

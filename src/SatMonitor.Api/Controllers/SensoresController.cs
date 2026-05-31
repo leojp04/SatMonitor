@@ -71,4 +71,14 @@ public class SensoresController : ControllerBase
         if (!result) return NotFound();
         return NoContent();
     }
+
+    [HttpGet("{id}/estatisticas")]
+    [ProducesResponseType(typeof(SensorEstatisticasDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetEstatisticas(int id)
+    {
+        var stats = await _service.GetEstatisticasAsync(id);
+        if (stats is null) return NotFound();
+        return Ok(stats);
+    }
 }

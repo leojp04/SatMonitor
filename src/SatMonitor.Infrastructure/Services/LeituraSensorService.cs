@@ -23,6 +23,7 @@ public class LeituraSensorService : ILeituraSensorService
                 Id = l.Id,
                 Valor = l.Valor,
                 DataHoraLeitura = l.DataHoraLeitura,
+                Status = l.Status.ToString(),
                 SensorId = l.SensorId
             }).ToListAsync();
     }
@@ -36,6 +37,7 @@ public class LeituraSensorService : ILeituraSensorService
             Id = l.Id,
             Valor = l.Valor,
             DataHoraLeitura = l.DataHoraLeitura,
+            Status = l.Status.ToString(),
             SensorId = l.SensorId
         };
     }
@@ -49,25 +51,48 @@ public class LeituraSensorService : ILeituraSensorService
                 Id = l.Id,
                 Valor = l.Valor,
                 DataHoraLeitura = l.DataHoraLeitura,
+                Status = l.Status.ToString(),
+                SensorId = l.SensorId
+            }).ToListAsync();
+    }
+
+    public async Task<IEnumerable<LeituraSensorDto>> GetByStatusAsync(string status)
+    {
+        return await _context.Leituras
+            .Where(l => l.Status.ToString() == status)
+            .Select(l => new LeituraSensorDto
+            {
+                Id = l.Id,
+                Valor = l.Valor,
+                DataHoraLeitura = l.DataHoraLeitura,
+                Status = l.Status.ToString(),
                 SensorId = l.SensorId
             }).ToListAsync();
     }
 
     public async Task<LeituraSensorDto> CreateAsync(CreateLeituraSensorDto dto)
     {
+        var sensor = await _context.Sensores.FindAsync(dto.SensorId);
+        if (sensor is null)
+            throw new ArgumentException($"Sensor com ID {dto.SensorId} não encontrado.");
+
         var leitura = new LeituraSensor
         {
             Valor = dto.Valor,
             DataHoraLeitura = dto.DataHoraLeitura,
-            SensorId = dto.SensorId
+            SensorId = dto.SensorId,
+            Status = sensor.CalcularStatus(dto.Valor)
         };
+
         _context.Leituras.Add(leitura);
         await _context.SaveChangesAsync();
+
         return new LeituraSensorDto
         {
             Id = leitura.Id,
             Valor = leitura.Valor,
             DataHoraLeitura = leitura.DataHoraLeitura,
+            Status = leitura.Status.ToString(),
             SensorId = leitura.SensorId
         };
     }

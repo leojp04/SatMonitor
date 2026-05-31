@@ -7,6 +7,7 @@ public class LeituraSensorDto
     public int Id { get; set; }
     public double Valor { get; set; }
     public DateTime DataHoraLeitura { get; set; }
+    public string Status { get; set; } = string.Empty;
     public int SensorId { get; set; }
 }
 

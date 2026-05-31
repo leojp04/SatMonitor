@@ -25,6 +25,8 @@ public class SensorService : ISensorService
                 Nome = s.Nome,
                 Tipo = s.Tipo.ToString(),
                 Unidade = s.Unidade,
+                LimiteMin = s.LimiteMin,
+                LimiteMax = s.LimiteMax,
                 SateliteId = s.SateliteId
             }).ToListAsync();
     }
@@ -39,6 +41,8 @@ public class SensorService : ISensorService
             Nome = s.Nome,
             Tipo = s.Tipo.ToString(),
             Unidade = s.Unidade,
+            LimiteMin = s.LimiteMin,
+            LimiteMax = s.LimiteMax,
             SateliteId = s.SateliteId
         };
     }
@@ -53,17 +57,24 @@ public class SensorService : ISensorService
                 Nome = s.Nome,
                 Tipo = s.Tipo.ToString(),
                 Unidade = s.Unidade,
+                LimiteMin = s.LimiteMin,
+                LimiteMax = s.LimiteMax,
                 SateliteId = s.SateliteId
             }).ToListAsync();
     }
 
     public async Task<SensorDto> CreateAsync(CreateSensorDto dto)
     {
+        if (dto.LimiteMin >= dto.LimiteMax)
+            throw new ArgumentException("LimiteMin deve ser menor que LimiteMax.");
+
         var sensor = new Sensor
         {
             Nome = dto.Nome,
             Tipo = Enum.Parse<TipoSensor>(dto.Tipo),
             Unidade = dto.Unidade,
+            LimiteMin = dto.LimiteMin,
+            LimiteMax = dto.LimiteMax,
             SateliteId = dto.SateliteId
         };
         _context.Sensores.Add(sensor);
@@ -74,17 +85,24 @@ public class SensorService : ISensorService
             Nome = sensor.Nome,
             Tipo = sensor.Tipo.ToString(),
             Unidade = sensor.Unidade,
+            LimiteMin = sensor.LimiteMin,
+            LimiteMax = sensor.LimiteMax,
             SateliteId = sensor.SateliteId
         };
     }
 
     public async Task<SensorDto?> UpdateAsync(int id, CreateSensorDto dto)
     {
+        if (dto.LimiteMin >= dto.LimiteMax)
+            throw new ArgumentException("LimiteMin deve ser menor que LimiteMax.");
+
         var sensor = await _context.Sensores.FindAsync(id);
         if (sensor is null) return null;
         sensor.Nome = dto.Nome;
         sensor.Tipo = Enum.Parse<TipoSensor>(dto.Tipo);
         sensor.Unidade = dto.Unidade;
+        sensor.LimiteMin = dto.LimiteMin;
+        sensor.LimiteMax = dto.LimiteMax;
         sensor.SateliteId = dto.SateliteId;
         await _context.SaveChangesAsync();
         return new SensorDto
@@ -93,6 +111,8 @@ public class SensorService : ISensorService
             Nome = sensor.Nome,
             Tipo = sensor.Tipo.ToString(),
             Unidade = sensor.Unidade,
+            LimiteMin = sensor.LimiteMin,
+            LimiteMax = sensor.LimiteMax,
             SateliteId = sensor.SateliteId
         };
     }
@@ -105,4 +125,35 @@ public class SensorService : ISensorService
         await _context.SaveChangesAsync();
         return true;
     }
+
+    public async Task<SensorEstatisticasDto?> GetEstatisticasAsync(int sensorId)
+{
+    var sensor = await _context.Sensores.FindAsync(sensorId);
+    if (sensor is null) return null;
+
+    var leituras = await _context.Leituras
+        .Where(l => l.SensorId == sensorId)
+        .ToListAsync();
+
+    if (!leituras.Any())
+        return new SensorEstatisticasDto
+        {
+            SensorId = sensorId,
+            NomeSensor = sensor.Nome,
+            TotalLeituras = 0
+        };
+
+    return new SensorEstatisticasDto
+    {
+        SensorId = sensorId,
+        NomeSensor = sensor.Nome,
+        TotalLeituras = leituras.Count,
+        ValorMedio = Math.Round(leituras.Average(l => l.Valor), 2),
+        ValorMinimo = leituras.Min(l => l.Valor),
+        ValorMaximo = leituras.Max(l => l.Valor),
+        TotalNormal = leituras.Count(l => l.Status == Domain.Enums.StatusLeitura.Normal),
+        TotalAlerta = leituras.Count(l => l.Status == Domain.Enums.StatusLeitura.Alerta),
+        TotalCritico = leituras.Count(l => l.Status == Domain.Enums.StatusLeitura.Critico)
+    };
+}
 }

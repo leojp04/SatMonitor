@@ -10,4 +10,5 @@ public interface ISensorService
     Task<SensorDto> CreateAsync(CreateSensorDto dto);
     Task<SensorDto?> UpdateAsync(int id, CreateSensorDto dto);
     Task<bool> DeleteAsync(int id);
+    Task<SensorEstatisticasDto?> GetEstatisticasAsync(int sensorId);
 }
