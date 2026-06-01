@@ -26,6 +26,12 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await DataSeeder.SeedAsync(context);
+}
+
 app.UseSwagger();
 app.UseSwaggerUI();
 
@@ -33,5 +39,18 @@ app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseCors("AllowAll");
 app.UseAuthorization();
 app.MapControllers();
+
+if (app.Environment.IsDevelopment())
+{
+    app.MapDelete("/dev/reset", async (AppDbContext db) =>
+    {
+        db.Leituras.RemoveRange(db.Leituras);
+        db.Sensores.RemoveRange(db.Sensores);
+        db.Satelites.RemoveRange(db.Satelites);
+        db.Missoes.RemoveRange(db.Missoes);
+        await db.SaveChangesAsync();
+        return Results.Ok(new { mensagem = "Banco limpo com sucesso" });
+    });
+}
 
 app.Run();
