@@ -9,7 +9,7 @@ API REST para monitoramento de satélites e sensores orbitais, desenvolvida em .
 ## 👥 Integrantes
 
 | Nome | RM |
-|------|-----|
+|------|----|
 | Leonardo José Pereira | RM563065 |
 | Pedro Henrique de Oliveira | RM562312 |
 | Fabricio Henrique Pereira | RM563237 |
@@ -18,22 +18,66 @@ API REST para monitoramento de satélites e sensores orbitais, desenvolvida em .
 
 ---
 
+## 🗺️ Diagrama de Domínio
+
+```mermaid
+erDiagram
+    MISSAO {
+        int Id PK
+        string Nome
+        string Descricao
+        datetime DataLancamento
+        enum Status
+    }
+    SATELITE {
+        int Id PK
+        string Nome
+        float Altitude
+        float Inclinacao
+        datetime DataLancamento
+        int MissaoId FK
+    }
+    SENSOR {
+        int Id PK
+        string Nome
+        enum Tipo
+        string Unidade
+        float LimiteMin
+        float LimiteMax
+        int SateliteId FK
+    }
+    LEITURA_SENSOR {
+        int Id PK
+        float Valor
+        datetime DataHoraLeitura
+        enum Status
+        int SensorId FK
+    }
+
+    MISSAO ||--o{ SATELITE : "1:N (Cascade Delete)"
+    SATELITE ||--o{ SENSOR : "1:N (Cascade Delete)"
+    SENSOR ||--o{ LEITURA_SENSOR : "1:N (Cascade Delete)"
+```
+
+---
+
 ## 🏗️ Arquitetura
 
 ```
 SatMonitor/
-├── src/
-│   ├── SatMonitor.Domain/         # Entidades e Enums
-│   ├── SatMonitor.Application/    # DTOs e Interfaces
-│   ├── SatMonitor.Infrastructure/ # DbContext, Migrations e Services
-│   └── SatMonitor.Api/            # Controllers, Middlewares e configuração
+└── src/
+    ├── SatMonitor.Domain/          # Entidades e Enums
+    ├── SatMonitor.Application/     # DTOs e Interfaces de serviço
+    ├── SatMonitor.Infrastructure/  # DbContext, Migrations e implementações
+    └── SatMonitor.Api/             # Controllers, Middlewares e Program.cs
 ```
 
-### Diagrama de Relacionamentos
+**Fluxo de dependências:**
+```
+Api → Infrastructure → Application → Domain
+```
 
-```
-Missao (1) ──── (N) Satelite (1) ──── (N) Sensor (1) ──── (N) LeituraSensor
-```
+Application define os contratos (interfaces). Infrastructure os implementa com acesso ao banco. Domain não depende de nenhuma camada externa.
 
 ---
 
@@ -60,20 +104,19 @@ cd SatMonitor
 }
 ```
 
-3. Execute as migrations:
-```bash
-dotnet ef database update --project src/SatMonitor.Infrastructure --startup-project src/SatMonitor.Api
-```
-
-4. Rode a API:
+3. Rode a API:
 ```bash
 dotnet run --project src/SatMonitor.Api
 ```
 
-5. Acesse o Swagger:
+> As migrations são aplicadas automaticamente na inicialização. O banco é populado com dados de seed (3 missões, 3 satélites, 4 sensores e 26 leituras) caso esteja vazio.
+
+4. Acesse o Swagger:
 ```
 http://localhost:5291/swagger
 ```
+
+> Swagger disponível apenas em ambiente Development.
 
 ---
 
@@ -86,7 +129,7 @@ http://localhost:5291/swagger
 | GET | /api/Missoes/{id} | Busca missão por ID |
 | POST | /api/Missoes | Cria nova missão |
 | PUT | /api/Missoes/{id} | Atualiza missão |
-| DELETE | /api/Missoes/{id} | Remove missão |
+| DELETE | /api/Missoes/{id} | Remove missão (cascade delete em satélites) |
 
 ### Satelites
 | Método | Rota | Descrição |
@@ -96,7 +139,7 @@ http://localhost:5291/swagger
 | GET | /api/Satelites/missao/{missaoId} | Lista satélites de uma missão |
 | POST | /api/Satelites | Cria novo satélite |
 | PUT | /api/Satelites/{id} | Atualiza satélite |
-| DELETE | /api/Satelites/{id} | Remove satélite |
+| DELETE | /api/Satelites/{id} | Remove satélite (cascade delete em sensores) |
 
 ### Sensores
 | Método | Rota | Descrição |
@@ -104,9 +147,10 @@ http://localhost:5291/swagger
 | GET | /api/Sensores | Lista todos os sensores |
 | GET | /api/Sensores/{id} | Busca sensor por ID |
 | GET | /api/Sensores/satelite/{sateliteId} | Lista sensores de um satélite |
+| GET | /api/Sensores/{id}/estatisticas | Retorna média, mín, máx e contagem por status |
 | POST | /api/Sensores | Cria novo sensor |
 | PUT | /api/Sensores/{id} | Atualiza sensor |
-| DELETE | /api/Sensores/{id} | Remove sensor |
+| DELETE | /api/Sensores/{id} | Remove sensor (cascade delete em leituras) |
 
 ### Leituras
 | Método | Rota | Descrição |
@@ -114,7 +158,8 @@ http://localhost:5291/swagger
 | GET | /api/Leituras | Lista todas as leituras |
 | GET | /api/Leituras/{id} | Busca leitura por ID |
 | GET | /api/Leituras/sensor/{sensorId} | Lista leituras de um sensor |
-| POST | /api/Leituras | Registra nova leitura |
+| GET | /api/Leituras/status/{status} | Filtra leituras por status (Normal/Alerta/Critico) |
+| POST | /api/Leituras | Registra nova leitura (status calculado automaticamente) |
 | DELETE | /api/Leituras/{id} | Remove leitura |
 
 ---
@@ -157,11 +202,13 @@ Content-Type: application/json
   "nome": "Sensor Térmico Principal",
   "tipo": "Temperatura",
   "unidade": "°C",
+  "limiteMin": -60.0,
+  "limiteMax": 80.0,
   "sateliteId": 1
 }
 ```
 
-### 4. Registrar Leitura
+### 4. Registrar Leitura (status calculado automaticamente)
 ```http
 POST /api/Leituras
 Content-Type: application/json
@@ -173,6 +220,26 @@ Content-Type: application/json
 }
 ```
 
+### 5. Filtrar leituras por status
+```http
+GET /api/Leituras/status/Alerta
+```
+
+### 6. Estatísticas de um sensor
+```http
+GET /api/Sensores/1/estatisticas
+```
+
+---
+
+## 🔧 Endpoint de Reset (Development only)
+
+```http
+DELETE /dev/reset
+```
+
+Limpa todos os dados do banco. Disponível apenas quando `ASPNETCORE_ENVIRONMENT=Development`.
+
 ---
 
 ## 🛠️ Tecnologias
@@ -182,5 +249,5 @@ Content-Type: application/json
 - Entity Framework Core 10
 - Oracle Database
 - Swagger / OpenAPI
-```
+
 
