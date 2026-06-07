@@ -22,8 +22,8 @@ API REST para monitoramento de satélites e sensores orbitais, desenvolvida em .
 
 | Vídeo | Link |
 |-------|------|
-| Demonstração (8 min) | [Assistir no YouTube](https://www.youtube.com/watch?v=S5NMHnqIxpE) |
-| Pitch (3 min) | Em breve |
+| Demonstração (8 min) | [Assistir no YouTube](https://www.youtube.com/watch?v=U1nMVM0tUJg) |
+| Pitch (3 min) | [Assistir no YouTube](https://www.youtube.com/watch?v=n7JltNHvWcQ)|
 
 ---
 
