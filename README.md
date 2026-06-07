@@ -18,6 +18,15 @@ API REST para monitoramento de satélites e sensores orbitais, desenvolvida em .
 
 ---
 
+## 🎥 Vídeos
+
+| Vídeo | Link |
+|-------|------|
+| Demonstração (8 min) | [Assistir no YouTube](https://www.youtube.com/watch?v=S5NMHnqIxpE) |
+| Pitch (3 min) | Em breve |
+
+---
+
 ## 🗺️ Diagrama de Domínio
 
 ```mermaid
