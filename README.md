@@ -23,7 +23,7 @@ API REST para monitoramento de satélites e sensores orbitais, desenvolvida em .
 | Vídeo | Link |
 |-------|------|
 | Demonstração (8 min) | [Assistir no YouTube](https://www.youtube.com/watch?v=U1nMVM0tUJg) |
-| Pitch (3 min) | [Assistir no YouTube](https://www.youtube.com/watch?v=n7JltNHvWcQ)|
+| Pitch (3 min) | [Assistir no YouTube](https://www.youtube.com/watch?v=n7JltNHvWcQ) |
 
 ---
 
@@ -91,6 +91,8 @@ Application define os contratos (interfaces). Infrastructure os implementa com a
 ---
 
 ## 🚀 Como Executar
+
+> **Atenção:** O Oracle FIAP encerra conexões idle após alguns minutos. Se um endpoint retornar 500 com "erro interno", reinicie a API com `dotnet run --project src/SatMonitor.Api` e tente novamente.
 
 ### Pré-requisitos
 - .NET 10 SDK
@@ -175,6 +177,8 @@ http://localhost:5291/swagger
 
 ## 🧪 Exemplos de Teste
 
+> Os exemplos abaixo seguem uma cadeia: o `id` retornado em cada POST deve ser usado como chave estrangeira no POST seguinte. Os IDs gerados pelo Oracle não começam necessariamente em 1.
+
 ### 1. Criar Missão
 ```http
 POST /api/Missoes
@@ -189,6 +193,7 @@ Content-Type: application/json
 ```
 
 ### 2. Criar Satélite
+> Use o `id` retornado no POST da missão como `missaoId`.
 ```http
 POST /api/Satelites
 Content-Type: application/json
@@ -203,6 +208,7 @@ Content-Type: application/json
 ```
 
 ### 3. Criar Sensor
+> Use o `id` retornado no POST do satélite como `sateliteId`.
 ```http
 POST /api/Sensores
 Content-Type: application/json
@@ -218,6 +224,7 @@ Content-Type: application/json
 ```
 
 ### 4. Registrar Leitura (status calculado automaticamente)
+> Use o `id` retornado no POST do sensor como `sensorId`.
 ```http
 POST /api/Leituras
 Content-Type: application/json
@@ -258,5 +265,3 @@ Limpa todos os dados do banco. Disponível apenas quando `ASPNETCORE_ENVIRONMENT
 - Entity Framework Core 10
 - Oracle Database
 - Swagger / OpenAPI
-
-
